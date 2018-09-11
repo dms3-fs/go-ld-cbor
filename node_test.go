@@ -9,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
-	blocks "github.com/ipfs/go-block-format"
-	cid "github.com/ipfs/go-cid"
-	u "github.com/ipfs/go-ipfs-util"
-	mh "github.com/multiformats/go-multihash"
+	blocks "github.com/dms3-fs/go-block-format"
+	cid "github.com/dms3-fs/go-cid"
+	u "github.com/dms3-fs/go-fs-util"
+	mh "github.com/dms3-mft/go-multihash"
 )
 
 func assertCid(c *cid.Cid, exp string) error {
@@ -347,8 +347,8 @@ func TestExamples(t *testing.T) {
 		"1":                             "zdpuB2pwLskBDu5PZE2sepLyc3SRFPFgVXmnpzXVtWgam25kY",
 		"[1]":                           "zdpuB31oq9uvbqcSTySbWhD9NMBJDjsUXKtyQNhFAsYNbYH95",
 		"true":                          "zdpuAo6JPKbsmgmtujhh7mGywsAwPRmtyAYZBPKYYRjyLujD1",
-		`{"a":"IPFS"}`:                  "zdpuB3AZ71ccMjBB9atM97R4wSaCYjGyztnHnjUu93t4B2XqY",
-		`{"a":"IPFS","b":null,"c":[1]}`: "zdpuAyoYWNEe6xcGhkYk2SUfc7Rtbk4GkmZCrNAAnpft4Mmj5",
+		`{"a":"DMS3FS"}`:                  "zdpuB3AZ71ccMjBB9atM97R4wSaCYjGyztnHnjUu93t4B2XqY",
+		`{"a":"DMS3FS","b":null,"c":[1]}`: "zdpuAyoYWNEe6xcGhkYk2SUfc7Rtbk4GkmZCrNAAnpft4Mmj5",
 		`{"a":[]}`:                      "zdpuAmMgJUCDGT4WhHAych8XpSVKQXEwsWhzQhhssr8542KXw",
 	}
 	for originalJson, expcid := range examples {

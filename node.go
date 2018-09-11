@@ -10,23 +10,23 @@ import (
 	"strconv"
 	"strings"
 
-	blocks "github.com/ipfs/go-block-format"
-	cid "github.com/ipfs/go-cid"
-	node "github.com/ipfs/go-ipld-format"
-	mh "github.com/multiformats/go-multihash"
+	blocks "github.com/dms3-fs/go-block-format"
+	cid "github.com/dms3-fs/go-cid"
+	node "github.com/dms3-fs/go-ld-format"
+	mh "github.com/dms3-mft/go-multihash"
 	cbor "github.com/whyrusleeping/cbor/go"
 )
 
 const CBORTagLink = 42
 
-// Decode a CBOR encoded Block into an IPLD Node.
+// Decode a CBOR encoded Block into an DMS3LD Node.
 //
 // This method *does not* canonicalize and *will* preserve the CID. As a matter
 // of fact, it will assume that `block.Cid()` returns the correct CID and will
 // make no effort to validate this assumption.
 //
 // In general, you should not be calling this method directly. Instead, you
-// should be calling the `Decode` method from the `go-ipld-format` package. That
+// should be calling the `Decode` method from the `go-ld-format` package. That
 // method will pick the right decoder based on the Block's CID.
 //
 // Note: This function keeps a reference to `block` and assumes that it is
@@ -59,7 +59,7 @@ func decodeBlock(block blocks.Block) (*Node, error) {
 
 var _ node.DecodeBlockFunc = DecodeBlock
 
-// Decode a CBOR object into an IPLD Node.
+// Decode a CBOR object into an DMS3LD Node.
 //
 // If passed a non-canonical CBOR node, this function will canonicalize it.
 // Therefore, `bytes.Equal(b, Decode(b).RawData())` may not hold. If you already
@@ -78,7 +78,7 @@ func Decode(b []byte, mhType uint64, mhLen int) (*Node, error) {
 	return WrapObject(m, mhType, mhLen)
 }
 
-// DecodeInto decodes a serialized ipld cbor object into the given object.
+// DecodeInto decodes a serialized dms3ld cbor object into the given object.
 func DecodeInto(b []byte, v interface{}) error {
 	// The cbor library really doesnt make this sort of operation easy on us
 	m, err := decodeCBOR(b)
@@ -108,7 +108,7 @@ func decodeCBOR(b []byte) (m interface{}, err error) {
 		}
 	}()
 	dec := cbor.NewDecoder(bytes.NewReader(b))
-	dec.TagDecoders[CBORTagLink] = new(IpldLinkDecoder)
+	dec.TagDecoders[CBORTagLink] = new(Dms3LdLinkDecoder)
 	err = dec.Decode(&m)
 	return
 }
@@ -525,20 +525,20 @@ func EncoderFilter(i interface{}) interface{} {
 	}
 }
 
-type IpldLinkDecoder struct{}
+type Dms3LdLinkDecoder struct{}
 
-func (d *IpldLinkDecoder) DecodeTarget() interface{} {
+func (d *Dms3LdLinkDecoder) DecodeTarget() interface{} {
 	return &[]byte{}
 }
 
-func (d *IpldLinkDecoder) GetTag() uint64 {
+func (d *Dms3LdLinkDecoder) GetTag() uint64 {
 	return CBORTagLink
 }
 
-func (d *IpldLinkDecoder) PostDecode(i interface{}) (interface{}, error) {
+func (d *Dms3LdLinkDecoder) PostDecode(i interface{}) (interface{}, error) {
 	ibarr, ok := i.(*[]byte)
 	if !ok {
-		return nil, fmt.Errorf("expected a byte array in IpldLink PostDecode")
+		return nil, fmt.Errorf("expected a byte array in Dms3LdLink PostDecode")
 	}
 
 	barr := *ibarr
@@ -550,7 +550,7 @@ func (d *IpldLinkDecoder) PostDecode(i interface{}) (interface{}, error) {
 	// TODO: manually doing multibase checking here since our deps don't
 	// support binary multibase yet
 	if barr[0] != 0 {
-		return nil, fmt.Errorf("invalid multibase on ipld link")
+		return nil, fmt.Errorf("invalid multibase on dms3ld link")
 	}
 
 	c, err := cid.Cast(barr[1:])
@@ -561,5 +561,5 @@ func (d *IpldLinkDecoder) PostDecode(i interface{}) (interface{}, error) {
 	return c, nil
 }
 
-var _ cbor.TagDecoder = (*IpldLinkDecoder)(nil)
+var _ cbor.TagDecoder = (*Dms3LdLinkDecoder)(nil)
 var _ node.Node = (*Node)(nil)
